@@ -80,7 +80,7 @@ export const getAllChats = TryCatch(async (req: AuthenticatedRequest, res) => {
 
             try {
                 const { data } = await axios.get(
-                    `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`
+                    `${process.env.USER_SERVICE}/api/user/${otherUserId}`
                 );
 
                 return {
@@ -305,7 +305,7 @@ export const getMessagesByChatId = TryCatch(async (req: AuthenticatedRequest, re
 
     try {
         const { data } = await axios.get(
-            `${process.env.USER_SERVICE}/api/v1/user/${otherUserId}`
+            `${process.env.USER_SERVICE}/api/user/${otherUserId}`
         );
 
         //socket

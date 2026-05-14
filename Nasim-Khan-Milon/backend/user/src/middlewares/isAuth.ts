@@ -6,6 +6,14 @@ export interface AuthenticatedRequest extends Request {
   user?: any;
 }
 
+interface DecodedToken extends JwtPayload {
+  user?: {
+    id: string;
+    email: string;
+    name?: string;
+  };
+}
+
 export const isAuth = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -33,11 +41,20 @@ export const isAuth = async (
     const decodedValue = jwt.verify(
       token,
       process.env.JWT_SECRET as string
-    ) as JwtPayload;
+    ) as DecodedToken;
+
+    const userId = decodedValue.user?.id;
+
+    if (!userId) {
+      res.status(401).json({
+        message: 'Invalid token',
+      });
+      return;
+    }
 
     const user = await prisma.user.findUnique({
       where: {
-        id: decodedValue.id,
+        id: userId,
       },
     });
 
