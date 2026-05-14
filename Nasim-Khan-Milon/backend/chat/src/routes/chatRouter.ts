@@ -1,5 +1,5 @@
 import express from "express"
-import { createNewChat, getAllChats, getMessagesByChatId, sendMessage } from "../controllers/chat.js";
+import { createNewChat, getAllChats, getMessagesByChatId, sendMessage } from "../controllers/chatController.js";
 import upload from "../middlewares/multer.js";
 import { isAuth } from "../middlewares/isAuth.js";
 

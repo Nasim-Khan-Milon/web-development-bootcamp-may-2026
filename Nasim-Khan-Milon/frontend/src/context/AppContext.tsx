@@ -10,13 +10,13 @@ export const mail_service = process.env.NEXT_PUBLIC_MAIL_SERVICE as string;
 export const chat_service = process.env.NEXT_PUBLIC_CHAT_SERVICE as string;
 
 export interface User {
-    _id: string,
+    id: string,
     name: string,
     email: string
 }
 
 export interface Chat {
-    _id: string,
+    id: string,
     users: string[],
     latestMessage: {
         text: string,
@@ -28,7 +28,7 @@ export interface Chat {
 }
 
 export interface Chats {
-    _id: string,
+    id: string,
     user: User,
     chat: Chat
 }
@@ -42,6 +42,7 @@ interface AppContextType {
     setIsAuth: React.Dispatch<React.SetStateAction<boolean>>,
     logOutUser: () => Promise<void>;
     fetchUsers: () => Promise<void>;
+    fetchChats: () => Promise<void>;
     users: User[] | null;
     chats: Chats[] | null;
     setChats: React.Dispatch<React.SetStateAction<Chats[] | null>>;
@@ -114,21 +115,42 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         }
     }
 
-
+    const fetchChats = async () => {
+        try {
+            const token = Cookies.get("token");
+            if (!token) {
+                setChats(null);
+                return;
+            }
+            const { data } = await axios.get(`${chat_service}/api/chat/all`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setChats(data.chats);
+        } catch (error: unknown) {
+            console.error("Error fetching chats:", error);
+            setChats(null);
+        }
+    }
 
 
     useEffect(() => {
         // if (!isAuth) return;
 
-        fetchUser(),
+        const loadData = async () => {
+            await fetchUser();
+            await fetchUsers();
+            await fetchChats();
+        };
 
-        fetchUsers()
+        loadData();
 
     }, []);
 
 
     return (
-        <AppContext.Provider value={{ user, loading, isAuth, setUser, setIsAuth, logOutUser, fetchUsers, users, chats, setChats }}>
+        <AppContext.Provider value={{ user, loading, isAuth, setUser, setIsAuth, logOutUser, fetchUsers, fetchChats, users, chats, setChats }}>
             {children}
             <Toaster />
         </AppContext.Provider>

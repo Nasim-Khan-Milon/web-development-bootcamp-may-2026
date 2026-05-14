@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import prisma from './config/prisma.js';
-import ChatRouter from './routes/chat.js';
+import ChatRouter from './routes/chatRouter.js';
 import cors from 'cors';
 
 dotenv.config();
