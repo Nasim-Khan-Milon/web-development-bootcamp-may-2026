@@ -1,20 +1,19 @@
 "use client"
 
-import { useAppData } from '@/context/AppContext';
-// import Loading from '@/components/Loading';
+import Loading from '@/components/Loading';
+import { useAppData, user_service } from '@/context/AppContext';
 import axios from 'axios';
 import { ArrowRight, Loader2, Mail } from 'lucide-react'
 import { redirect, useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 import { toast } from 'react-hot-toast';
 
-const LoginPage = () => {
+const Page = () => {
 
-    const { user_service} = useAppData();
+    const { isAuth, loading: userLoading } = useAppData();
 
-    const [email, setEmail] = useState<string>('')
-    const [loading, setLoading] = useState<boolean>(false);
-
+    const [email, setEmail] = useState<string>("");
+    const [loading, setLoading ] = useState<boolean>(false);
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent<HTMLElement>) : Promise<void> => {
@@ -23,7 +22,7 @@ const LoginPage = () => {
 
         try {
 
-            const { data } = await axios.post(`${process.env.NEXT_PUBLIC_USER_SERVICE}/api/user/login` , {email})
+            const { data } = await axios.post(`${user_service}/api/user/login` , {email})
 
             toast.success(data.message);
             router.push(`/verify?email=${email}`)
@@ -39,8 +38,15 @@ const LoginPage = () => {
         }
     }
 
+    if (userLoading) {
+        return <Loading />;
+    }
 
-     return (
+    if (isAuth) {
+        redirect("/chat");
+    }
+
+    return (
         <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
             <div className="max-w-md w-full">
                 <div className="bg-gray-800 border border-gray-700 rounded-lg p-8">
@@ -102,4 +108,4 @@ const LoginPage = () => {
     )
 }
 
-export default LoginPage
+export default Page

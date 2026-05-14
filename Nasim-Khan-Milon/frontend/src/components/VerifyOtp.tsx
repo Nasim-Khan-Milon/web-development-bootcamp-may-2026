@@ -6,10 +6,12 @@ import { redirect, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react'
 import Cookies from 'js-cookie';
 import { useAppData, user_service } from '@/context/AppContext';
-// import Loading from './Loading';
+import Loading from './Loading';
 import toast from 'react-hot-toast';
 
 const VerifyOtp = () => {
+
+    const { isAuth, setIsAuth, setUser, loading: userLoading, fetchUsers } = useAppData();
 
     const [loading, setLoading] = useState<boolean>(false);
     const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
@@ -83,7 +85,7 @@ const VerifyOtp = () => {
         setLoading(true);
 
         try {
-            const { data } = await axios.post(`${process.env.NEXT_PUBLIC_USER_SERVICE}/api/user/verify`, { email, otp: otpString });
+            const { data } = await axios.post(`${user_service}/api/user/verify`, { email, otp: otpString });
 
             toast.success(data.message);
             Cookies.set("token", data.token, {
@@ -93,11 +95,11 @@ const VerifyOtp = () => {
             });
             setOtp(["", "", "", "", "", ""]);
             inputRefs.current[0]?.focus();
-            router.push("/chat");
-            // setUser(data.user);
-            // setIsAuth(true);
+            // router.push("/chat");
+            setUser(data.user);
+            setIsAuth(true);
             // fetchChats();
-            // fetchUsers();
+            fetchUsers();
         } catch (error: unknown) {
             if (axios.isAxiosError(error)) {
                 setError(
@@ -116,7 +118,7 @@ const VerifyOtp = () => {
         setResending(true);
         setError("");
         try {
-            const { data } = await axios.post(`${process.env.NEXT_PUBLIC_USER_SERVICE}/api/user/login`, { email });
+            const { data } = await axios.post(`${user_service}/api/user/login`, { email });
             toast.success(data.message);
             setTimer(60);
         } catch (error: unknown) {
@@ -133,6 +135,13 @@ const VerifyOtp = () => {
         }
     };
 
+    if (userLoading) {
+        return <Loading />;
+    }
+
+    if(isAuth) {
+        redirect("/chat");
+    }
 
     return (
         <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">

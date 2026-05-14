@@ -70,10 +70,8 @@ export const verifyUser = TryCatch(async (req, res) => {
         },
     });
     if (!user) {
-        // const name = email.slice(0, 8);
-        // const name = email.split('@')[0].substring(0, 8);
         const name = email.split("@")[0];
-        user = await prisma.user.create({ data: {name, email} });
+        user = await prisma.user.create({ data: { name, email } });
     }
 
     const token = generateToken(user);
@@ -81,8 +79,60 @@ export const verifyUser = TryCatch(async (req, res) => {
     res.status(200).json({ message: "User verified successfully", user, token });
 });
 
+export const myProfile = TryCatch(async (req: AuthenticatedRequest, res) => {
+    const user = req.user;
 
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
 
+    res.status(200).json({ user });
+});
 
+export const getAllUsers = TryCatch(async (req: AuthenticatedRequest, res) => {
+    const users = await prisma.user.findMany();
+    res.status(200).json({ users });
+});
 
+export const getAUser = TryCatch(async (req: AuthenticatedRequest, res) => {
+    const userId = req.params.id;
 
+    if (!userId || Array.isArray(userId)) {
+        return res.status(400).json({
+            message: "Invalid user id",
+        });
+    }
+
+    const user = await prisma.user.findUnique({
+        where: {
+            id: userId,
+        },
+    });
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ user });
+});
+
+export const updateName = TryCatch(async (req: AuthenticatedRequest, res) => {
+
+    const { name } = req.body;
+
+    if (!name) {
+        return res.status(400).json({ message: "Name is required" });
+    }
+
+    const updatedUser = await prisma.user.update({
+        where: {
+            id: req.user.id,
+        },
+        data: {
+            name,
+        },
+    });
+
+    const token = generateToken(updatedUser);
+
+    res.status(200).json({ message: "Name updated successfully", user: updatedUser, token });
+
+});
