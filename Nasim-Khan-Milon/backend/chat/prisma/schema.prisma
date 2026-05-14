@@ -8,33 +8,35 @@ datasource db {
 }
 
 model Chat {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  users          String[]
-  latestText     String?
-  latestSender   String?
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  users         String[]
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  latestText    String?
+  latestSender  String?
 
-  messages       Message[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  messages      Message[] @relation("ChatMessages")
 }
 
 model Message {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
 
-  chatId       String    @db.ObjectId
-  chat         Chat      @relation(fields: [chatId], references: [id])
+  chatId         String    @db.ObjectId
+  chat           Chat      @relation("ChatMessages", fields: [chatId], references: [id])
 
-  sender       String
-  text         String?
+  sender         String
+  text           String?
 
-  imageUrl     String?
-  imagePublicId String?
+  imageUrl       String?
+  imagePublicId  String?
 
-  messageType  String
-  seen         Boolean   @default(false)
-  seenAt       DateTime?
+  messageType    String
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  seen           Boolean   @default(false)
+  seenAt         DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
