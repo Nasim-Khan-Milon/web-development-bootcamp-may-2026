@@ -3,10 +3,10 @@ import dotenv from 'dotenv';
 import prisma from './config/prisma.js';
 import ChatRouter from './routes/chatRouter.js';
 import cors from 'cors';
+import { app, server } from './config/socket.js';
 
 dotenv.config();
 
-const app = express();
 const port = process.env.PORT || 4002;
 
 
@@ -15,6 +15,6 @@ app.use(cors());
 
 app.use("/api/chat", ChatRouter);
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
