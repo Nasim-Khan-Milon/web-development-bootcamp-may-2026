@@ -247,6 +247,8 @@ const Page = () => {
       console.log("received new message", newMessage);
 
       if (newMessage.chatId === selectedUser) {
+        console.log("selectedUser", selectedUser);
+        console.log("newMessage.chatId", newMessage.chatId);
         setMessages((prev) => {
           const currentMessages = prev || [];
 

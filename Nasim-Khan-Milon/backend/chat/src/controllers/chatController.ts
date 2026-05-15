@@ -2,6 +2,7 @@ import axios from "axios";
 import TryCatch from "../config/TryCatch.js";
 import type { AuthenticatedRequest } from "../middlewares/isAuth.js";
 import prisma from "../config/prisma.js";
+import { getReceiverSocketId, io } from "../config/socket.js";
 
 export const createNewChat = TryCatch(async (req: AuthenticatedRequest, res) => {
     const userId = req.user?.id;
@@ -212,8 +213,23 @@ export const sendMessage = TryCatch(async (req: AuthenticatedRequest, res) => {
 
     //socket
 
+    const formattedMessage = {
+        ...savedMessage,
+
+        image: savedMessage.imageUrl
+            ? {
+                url: savedMessage.imageUrl,
+                publicId: savedMessage.imagePublicId,
+            }
+            : undefined,
+    };
+
+    io.to(chatId).emit("newMessage", formattedMessage);
+
+    
+
     res.status(201).json({
-        message: savedMessage,
+        message: formattedMessage,
         sender: senderId
     });
 });
@@ -283,6 +299,8 @@ export const getMessagesByChatId = TryCatch(async (req: AuthenticatedRequest, re
         }
     });
 
+
+
     const messages = await prisma.message.findMany({
         where: {
             chatId
@@ -291,6 +309,19 @@ export const getMessagesByChatId = TryCatch(async (req: AuthenticatedRequest, re
             createdAt: "asc"
         }
     });
+
+    const formattedMessages = messages.map(
+        (message) => ({
+            ...message,
+
+            image: message.imageUrl
+                ? {
+                    url: message.imageUrl,
+                    publicId: message.imagePublicId
+                }
+                : undefined
+        })
+    );
 
     const otherUserId = chat.users.find(
         id => id !== userId
@@ -301,6 +332,28 @@ export const getMessagesByChatId = TryCatch(async (req: AuthenticatedRequest, re
             message: "Invalid chat participants"
         });
         return;
+    }
+
+    // socket seen event
+    if (messagesToMarkSeen.length > 0) {
+
+        const otherUserSocketId =
+            getReceiverSocketId(otherUserId);
+
+        if (otherUserSocketId) {
+
+            io.to(otherUserSocketId).emit(
+                "messagesSeen",
+                {
+                    chatId,
+                    seenBy: userId,
+                    messageIds:
+                        messagesToMarkSeen.map(
+                            (message) => message.id
+                        )
+                }
+            );
+        }
     }
 
     try {
