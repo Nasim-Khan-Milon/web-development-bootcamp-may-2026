@@ -59,15 +59,13 @@ const ChatMessages = ({ selectedUser, messages, loggedInUser }: ChatMessagesProp
                                             <div
                                                 className={`rounded-lg p-3 max-w-sm ${isSentByMe ? "bg-blue-600 text-white" : "bg-gray-700 text-white"}`}
                                             >
-                                                {e.messageType === "image" && e.image && (
-                                                    <div className="className=relative group">
-                                                        <div className="relative group">
-                                                            <img
-                                                                src={e.image.url}
-                                                                alt="sharedimage"
-                                                                className="object-cover rounded-lg"
-                                                            />
-                                                        </div>
+                                                {e.messageType === "image" && e.image?.url && (
+                                                    <div className="relative group">
+                                                        <img
+                                                            src={e.image.url}
+                                                            alt="sharedimage"
+                                                            className="object-cover rounded-lg max-w-[250px] max-h-[300px]"
+                                                        />
                                                     </div>
                                                 )}
 

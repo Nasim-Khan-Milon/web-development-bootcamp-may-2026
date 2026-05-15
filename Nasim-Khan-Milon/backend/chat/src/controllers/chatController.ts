@@ -364,7 +364,7 @@ export const getMessagesByChatId = TryCatch(async (req: AuthenticatedRequest, re
         //socket
 
         res.status(200).json({
-            messages,
+            messages: formattedMessages,
             user: data
         });
 

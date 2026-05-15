@@ -267,6 +267,18 @@ const Page = () => {
           return [...currentMessages, newMessage];
         });
 
+        if(newMessage.sender !== user?.id) {
+          socket.emit(
+                "markMessagesSeen",
+                {
+                    chatId:
+                        newMessage.chatId,
+
+                    userId: user?.id
+                }
+            );
+        }
+
         moveChatToTop(newMessage.chatId, newMessage, false);
       } else {
         moveChatToTop(newMessage.chatId, newMessage, true);
@@ -276,41 +288,30 @@ const Page = () => {
     });
 
     socket?.on("messagesSeen", (data: any) => {
-      console.log("received messages seen by ", data);
 
-      if (selectedUser === data.chatId) {
-        setMessages((prev) => {
-          if (!prev) return null;
+    console.log("received messages seen", data);
 
-          return prev.map((message) => {
-            if (
-              message.sender === loggedInUser?.id &&
-              data.messageIds &&
-              data.messageIds.includes(message.id)
-            ) {
-              return {
+    setMessages((prev) => {
+
+        if (!prev) return prev;
+
+        return prev.map((message) => {
+
+            const shouldUpdate =
+                data.messageIds?.includes(message.id);
+
+            if (!shouldUpdate) {
+                return message;
+            }
+
+            return {
                 ...message,
                 seen: true,
                 seenAt: new Date().toISOString(),
-              };
-            }
-
-            if (
-              message.sender === loggedInUser?.id &&
-              !data.messageIds
-            ) {
-              return {
-                ...message,
-                seen: true,
-                seenAt: new Date().toISOString(),
-              };
-            }
-
-            return message;
-          });
+            };
         });
-      }
-    })
+    });
+});
 
     socket?.on("typing", (data: any) => {
       console.log("received user typing", data);
@@ -377,7 +378,7 @@ const Page = () => {
         onlineUsers={onlineUsers}
       />
 
-      <div className='flex-1 flex flex-col overflow-hidden justify-between p-4 backdrop-blur-xl bg-white/5 border border-white/10'>
+      <div className='flex-1 flex flex-col h-screen overflow-hidden justify-between p-4 backdrop-blur-xl bg-white/5 border border-white/10'>
         <ChatHeader user={user} setSidebarOpen={setSidebarOpen} isTyping={isTyping} onlineUsers={onlineUsers} />
 
         <ChatMessages selectedUser={selectedUser} messages={messages} loggedInUser={loggedInUser} />

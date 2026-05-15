@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import http from 'http';
 import express from 'express';
+import prisma from "./prisma.js";
 
 const app = express();
 
@@ -31,11 +32,11 @@ io.on('connection', (socket: Socket) => {
 
     io.emit("getOnlineUser", Object.keys(userSocketMap));
 
-    if(userId) {
+    if (userId) {
         socket.join(userId);
     }
 
-    
+
 
     socket.on("joinChat", (chatId: string) => {
         if (!chatId) return;
@@ -53,7 +54,7 @@ io.on('connection', (socket: Socket) => {
 
     socket.on("typing", (data: { chatId: string; userId: string }) => {
         if (!data.chatId) return;
-        
+
         console.log(`User ${userId} is typing in chat ${data.chatId}`);
         socket.to(data.chatId).emit("typing", {
             chatId: data.chatId,
@@ -70,6 +71,77 @@ io.on('connection', (socket: Socket) => {
             userId: data.userId,
         });
     });
+
+    socket.on(
+        "markMessagesSeen",
+        async (data: {
+            chatId: string;
+            userId: string;
+        }) => {
+
+            try {
+
+                const unseenMessages =
+                    await prisma.message.findMany({
+                        where: {
+                            chatId: data.chatId,
+                            sender: {
+                                not: data.userId
+                            },
+                            seen: false
+                        }
+                    });
+
+                if (unseenMessages.length === 0) {
+                    return;
+                }
+
+                await prisma.message.updateMany({
+                    where: {
+                        chatId: data.chatId,
+                        sender: {
+                            not: data.userId
+                        },
+                        seen: false
+                    },
+                    data: {
+                        seen: true,
+                        seenAt: new Date()
+                    }
+                });
+
+                const senderId =
+                    unseenMessages[0]?.sender;
+
+                if (!senderId) return;
+
+                const senderSocketId =
+                    getReceiverSocketId(senderId);
+
+                if (senderSocketId) {
+
+                    io.to(senderSocketId).emit(
+                        "messagesSeen",
+                        {
+                            chatId: data.chatId,
+
+                            messageIds:
+                                unseenMessages.map(
+                                    (message) => message.id
+                                )
+                        }
+                    );
+                }
+
+            } catch (error) {
+
+                console.log(
+                    "markMessagesSeen error:",
+                    error
+                );
+            }
+        }
+    );
 
     socket.on('disconnect', () => {
         console.log('a user disconnected socket id:', socket.id);

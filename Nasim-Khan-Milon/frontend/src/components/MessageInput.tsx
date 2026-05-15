@@ -28,7 +28,7 @@ const MessageInput = ({ selectedUser, message, setMessage, handleMessageSend }: 
     if (!selectedUser) return null;
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-2 border-t border-gray-700 pt-2">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2 border-t border-gray-700 pt-2 shrink-0">
             {
                 imageFile && (<div className="relative w-fit">
                     <img src={URL.createObjectURL(imageFile)} alt="preview"
