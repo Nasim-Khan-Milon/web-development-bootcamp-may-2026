@@ -6,13 +6,7 @@ let channel: amqp.Channel;
 export const connectRabbitMQ = async () => {
     dotenv.config();
     try {
-        const connection = await amqp.connect({
-            protocol: 'amqp',
-            hostname: process.env.RABBITMQ_HOST!,
-            port: 5672,
-            username: process.env.RABBITMQ_USERNAME!,
-            password: process.env.RABBITMQ_PASSWORD!,
-        });
+        const connection = await amqp.connect(process.env.RABBITMQ_URL as string);
         channel = await connection.createChannel();
         console.log(' Connected to RabbitMQ');
     } catch (error) {
