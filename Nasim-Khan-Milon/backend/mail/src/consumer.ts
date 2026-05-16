@@ -27,6 +27,11 @@ export const startSendOtpConsumer = async () => {
                             pass: process.env.EMAIL_PASS,
                         },
                     });
+
+                    await transporter.verify();
+
+                    console.log("SMTP server is ready");
+
                     await transporter.sendMail({
                         from: "Chat Application",
                         to,
@@ -35,8 +40,17 @@ export const startSendOtpConsumer = async () => {
                     });
                     console.log(`OTP email sent to ${to}`);
                     channel.ack(msg);
-                } catch (error) {
-                    console.error('Failed to send otp email:', error);
+                } catch (error: any) {
+
+                    console.error(
+                        "Failed to send otp email:"
+                    );
+
+                    console.log(error);
+
+                    if (msg) {
+                        channel.nack(msg, false, false);
+                    }
                 }
             }
         });
