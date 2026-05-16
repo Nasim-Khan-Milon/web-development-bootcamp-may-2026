@@ -14,11 +14,26 @@ app.get("/", (req, res) => {
   res.send("Mail service running");
 });
 
-app.listen(port, async () => {
+const startServer = async () => {
 
-  console.log(
-    `Mail service is running on port ${port}`
-  );
+  try {
 
-  await startSendOtpConsumer();
-});
+    await startSendOtpConsumer();
+
+    app.listen(port, () => {
+
+      console.log(
+        `Mail service is running on port ${port}`
+      );
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Failed to start mail service:",
+      error
+    );
+  }
+};
+
+startServer();

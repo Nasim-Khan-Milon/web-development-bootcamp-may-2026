@@ -15,6 +15,7 @@ export const startSendOtpConsumer = async () => {
         console.log("Mail Service consumer started, listening for otp emails...");
 
         channel.consume(queueName, async (msg) => {
+            console.log("Received message from queue");
             if (msg) {
                 try {
                     const { to, subject, body } = JSON.parse(msg.content.toString());
