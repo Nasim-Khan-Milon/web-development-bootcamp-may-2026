@@ -34,7 +34,7 @@ export const startSendOtpConsumer = async () => {
                     console.log("SMTP server is ready");
 
                     await transporter.sendMail({
-                        from: "Chat Application",
+                        from: `"Chat Application" <${process.env.EMAIL_USER}>`,
                         to,
                         subject,
                         text: body
